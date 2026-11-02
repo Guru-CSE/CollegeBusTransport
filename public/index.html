@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#103b35">
+  <title>CampusRide · Transport desk</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="topbar"><a class="brand" href="/"><span class="mark">CR</span><span><b>CampusRide</b><small>TRANSPORT DESK</small></span></a><div class="top-actions"><span id="connection-pill" class="pill">Connecting…</span><span id="signed-in-as" class="signed-in hidden"></span><button id="logout-button" class="button ghost hidden" type="button">Sign out</button></div></header>
+  <main class="container">
+    <div id="global-message" class="notice hidden" role="status" aria-live="polite"></div>
+    <section id="login-view" class="login-layout">
+      <div class="intro"><div class="eyebrow">COLLEGE TRANSPORT · DEMO</div><h1>Every ride,<br><em>accounted for.</em></h1><p>Sign in to check transport-fee eligibility, review bus details, or manage the demo roster.</p><div class="trust-note"><span class="dot"></span> Local classroom prototype · Fake sample data</div></div>
+      <div class="card login-card">
+        <div class="eyebrow">WELCOME BACK</div><h2>Sign in</h2><p class="muted">Sign in to your transport account.</p>
+        <form id="login-form">
+        <label for="login-role">Account type</label><select id="login-role" required><option value="">Select account type</option><option value="admin">Admin</option><option value="student">Student</option><option value="staff_passenger">Staff</option></select>
+        <label for="username">Username</label><input id="username" name="username" autocomplete="username" required>
+        <label for="password">Password</label><input id="password" name="password" type="password" autocomplete="current-password" required>
+        <button class="button primary full" type="submit">Sign in <span aria-hidden="true">→</span></button>
+        <div id="login-error" class="form-error" role="alert"></div>
+        </form>
+        <button class="text-button auth-switch" id="show-registration" type="button">New passenger? Register</button>
+        <form id="registration-form" class="hidden auth-extra">
+          <div class="eyebrow">NEW ACCOUNT REQUEST</div><h2>Register</h2>
+          <label>Register as<select name="role" required><option value="student">Student</option><option value="staff_passenger">Staff</option></select></label>
+          <label>Full name<input name="fullName" maxlength="120" required></label><label id="registration-id-label">Student roll number<input name="username" maxlength="20" required></label>
+          <label>Department<input name="department" maxlength="80" required></label><label>Phone number<input name="phone" type="tel" maxlength="24" required></label><label>Address<textarea name="address" maxlength="500" required></textarea></label>
+          <label id="study-year">Year of study<input name="yearOfStudy" type="number" min="1" max="8" value="1" required></label>
+          <label>Preferred route<select name="routeId" id="registration-route" required><option value="">Loading routes…</option></select></label>
+          <label>Password<input name="password" type="password" minlength="8" autocomplete="new-password" required></label><label>Confirm password<input name="confirmPassword" type="password" minlength="8" autocomplete="new-password" required></label>
+          <button class="button primary full">Submit request</button><div id="registration-error" class="form-error" role="alert"></div>
+          <button class="text-button auth-switch" id="show-login" type="button">Back to sign in</button>
+        </form>
+        <form id="status-form" class="auth-extra status-check"><label>Check application status<input name="username" placeholder="Roll number or staff ID" required></label><button class="button secondary">Check status</button><div id="status-result" role="status"></div></form>
+      </div>
+    </section>
+    <section id="workspace-view" class="hidden">
+      <div class="welcome-row"><div><div class="eyebrow" id="role-label">TRANSPORT</div><h1 id="page-title">Workspace</h1></div><div id="last-updated" class="muted small"></div></div>
+      <nav id="role-nav" class="tabs" aria-label="Workspace sections"></nav>
+      <div id="workspace-content"></div>
+    </section>
+    <footer>CampusRide is a local demo. A barcode identifies a card, not the person holding it.</footer>
+  </main>
+  <script src="/vendor/zxing/zxing-browser.min.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>
