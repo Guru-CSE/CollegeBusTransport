@@ -48,6 +48,44 @@ const requireRole = (...roles) => (req, res, next) => {
   if (!roles.includes(req.session.user.role)) return res.status(403).json({ error: 'You do not have access to this action.' });
   next();
 };
+const announcementAudiences = ['everyone','students','staff'];
+function announcementInput(body, creating) {
+  const title=String(body?.title||'').trim(),message=String(body?.message||'').trim();
+  const audience=String(body?.audience||''),expiry=String(body?.expiresAt||'');
+  if(!title||title.length>150||!message||message.length>10000||!announcementAudiences.includes(audience)) return {error:'Enter a title, message, and valid audience.'};
+  if(!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(expiry)) return {error:'Choose a valid expiry date and time.'};
+  const expiresAt=Date.parse(expiry);
+  if(!Number.isFinite(expiresAt)||new Date(expiresAt).toISOString()!==expiry) return {error:'Choose a valid expiry date and time.'};
+  if(creating&&expiresAt<=Date.now()) return {error:'Expiry must be in the future.'};
+  return {title,message,audience,expiresAt:new Date(expiresAt).toISOString().slice(0,23).replace('T',' ')};
+}
+app.get('/api/announcements',requireRole('student','staff_passenger'),async(req,res)=>{
+  res.set('Cache-Control','no-store');
+  const audience=req.session.user.role==='student'?'students':'staff';
+  try {const [announcements]=await db.execute("SELECT id,title,message,created_at,DATE_FORMAT(expires_at,'%Y-%m-%dT%H:%i:%s.%fZ') expires_at FROM announcements WHERE is_published=TRUE AND expires_at>UTC_TIMESTAMP(3) AND audience IN ('everyone',?) ORDER BY created_at DESC,id DESC",[audience]);res.json({announcements});}
+  catch{res.status(503).json({error:'Announcements are unavailable.'});}
+});
+app.get('/api/admin/announcements',requireRole('admin'),async(_req,res)=>{
+  res.set('Cache-Control','no-store');
+  try {const [announcements]=await db.execute("SELECT id,title,message,audience,is_published,created_at,DATE_FORMAT(expires_at,'%Y-%m-%dT%H:%i:%s.%fZ') expires_at,DATE_FORMAT(updated_at,'%Y-%m-%dT%H:%i:%s.%fZ') updated_at,expires_at<=UTC_TIMESTAMP(3) expired FROM announcements ORDER BY created_at DESC,id DESC");res.json({announcements});}
+  catch{res.status(503).json({error:'Announcement history is unavailable.'});}
+});
+app.post('/api/admin/announcements',requireRole('admin'),async(req,res)=>{
+  const input=announcementInput(req.body,true);if(input.error)return res.status(400).json({error:input.error});
+  try {const [saved]=await db.execute('INSERT INTO announcements (title,message,is_published,audience,expires_at) VALUES (?,?,TRUE,?,?)',[input.title,input.message,input.audience,input.expiresAt]);res.status(201).json({ok:true,id:saved.insertId});}
+  catch{res.status(503).json({error:'Announcement was not published.'});}
+});
+app.patch('/api/admin/announcements/:id',requireRole('admin'),async(req,res)=>{
+  const input=announcementInput(req.body,false);if(input.error)return res.status(400).json({error:input.error});
+  if(!/^\d+$/.test(String(req.params.id)))return res.status(400).json({error:'Invalid announcement ID.'});
+  try {const [saved]=await db.execute('UPDATE announcements SET title=?,message=?,audience=?,expires_at=?,is_published=TRUE WHERE id=?',[input.title,input.message,input.audience,input.expiresAt,req.params.id]);if(!saved.affectedRows){const [[existing]]=await db.execute('SELECT id FROM announcements WHERE id=?',[req.params.id]);if(!existing)return res.status(404).json({error:'Announcement not found.'});}res.json({ok:true});}
+  catch{res.status(503).json({error:'Announcement was not updated.'});}
+});
+app.delete('/api/admin/announcements/:id',requireRole('admin'),async(req,res)=>{
+  if(!/^\d+$/.test(String(req.params.id)))return res.status(400).json({error:'Invalid announcement ID.'});
+  try {const [removed]=await db.execute('DELETE FROM announcements WHERE id=?',[req.params.id]);if(!removed.affectedRows)return res.status(404).json({error:'Announcement not found.'});res.json({ok:true});}
+  catch{res.status(503).json({error:'Announcement was not deleted.'});}
+});
 app.post('/api/register', async (req,res) => {
   const b=req.body||{}, role=String(b.role||'').toLowerCase(), username=String(b.username||'').trim(), password=String(b.password||'');
   const fullName=String(b.fullName||'').trim(), department=String(b.department||'').trim(), phone=String(b.phone||'').trim(), address=String(b.address||'').trim();

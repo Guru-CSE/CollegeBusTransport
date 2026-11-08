@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "description": "Local classroom prototype for college bus fee eligibility checks",
-  "scripts": { "start": "node server.js", "dev": "node --watch server.js", "start:https": "node server.js --https", "cert:dev": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/create-dev-cert.ps1", "seed": "node seed.js", "migrate:rolls": "node database/migrate-six-digit-rolls.js", "migrate:portal-data": "node database/migrate-staff-fees.js", "migrate:complete": "node database/migrate-complete.js", "migrate:registration": "node database/migrate-registration.js" },
+  "scripts": { "start": "node server.js", "dev": "node --watch server.js", "start:https": "node server.js --https", "cert:dev": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/create-dev-cert.ps1", "seed": "node seed.js", "migrate:rolls": "node database/migrate-six-digit-rolls.js", "migrate:portal-data": "node database/migrate-staff-fees.js", "migrate:complete": "node database/migrate-complete.js", "migrate:registration": "node database/migrate-registration.js", "migrate:announcements": "node database/migrate-announcements.js" },
   "dependencies": {
     "@zxing/browser": "^0.1.5",
     "bcryptjs": "^2.4.3",

@@ -121,7 +121,11 @@ CREATE TABLE IF NOT EXISTS announcements (
   title VARCHAR(150) NOT NULL,
   message TEXT NOT NULL,
   is_published BOOLEAN NOT NULL DEFAULT FALSE,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+  audience ENUM('everyone','students','staff') NOT NULL DEFAULT 'everyone',
+  expires_at DATETIME(3) NOT NULL DEFAULT '2099-12-31 23:59:59.999',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_announcement_visibility (is_published,audience,expires_at)
 );
 CREATE TABLE IF NOT EXISTS change_requests (
   id INT AUTO_INCREMENT PRIMARY KEY,
